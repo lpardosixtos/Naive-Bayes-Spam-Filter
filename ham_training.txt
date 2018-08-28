@@ -345,5 +345,3 @@ i/BiKWGd4hxsBbmyIrGbgHg4IJpwSjrp60PevYWktOB+QnCsUFQGyKy5cJt1a95X
 To UNSUBSCRIBE, email to debian-kde-REQUEST@lists.debian.org
 with a subject of "unsubscribe". Trouble? Contact listmaster@lists.debian.org
 Archive: http://lists.debian.org/201005060854.47214.Howland@priss.com
-
-
