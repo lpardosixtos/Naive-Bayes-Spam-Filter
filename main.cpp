@@ -29,7 +29,6 @@ void read(array<map<string, int>, 2> &dicts, int &numSpam, int &numHam){
             string::iterator lastIt=aux.end();
             while(it!=aux.end()){
                 if(isalpha(*it)){
-                    //cout << *it << "\n";
                     *it=tolower(*it);
                     if(lastIt==aux.end()) lastIt=it;
                 }
@@ -68,7 +67,6 @@ void read(array<map<string, int>, 2> &dicts, int &numSpam, int &numHam){
         }
     }
     in_file.close();
-    //cout << cont<<"\n";
 }
 
 double spamGivenWords(double &probSpamWords, double &probWords, double &probSpam){
@@ -78,17 +76,19 @@ double spamGivenWords(double &probSpamWords, double &probWords, double &probSpam
     return aux;
 }
 
-void test(map<string, pair<int, int> > &inventario, array<int, 2> &sum, double &probSpam, int &numSpamTest, int &numHamTest, int &numSpamFinal, int &numHamFinal){
+void test(map<string, pair<int, int> > &inventario, int &numSpam, int &numHam, int &numTot, double &probSpam, int &numSpamTest, int &numHamTest, int &numSpamFinal, int &numHamFinal){
     ifstream in_file;
-    in_file.open("prueba.txt");
+    in_file.open("test_set.txt");
     string aux;
+    int cont=0;
     while(!in_file.eof()){
+        cont++;
         set<string> thisSMS;
         int ind=0;
         getline(in_file, aux);
         if(aux[0]=='h') numHamTest++;
         else numSpamTest++;
-        double probSpamWords=1, probWords=1;
+        double probSpamWords=1, probHamWords=1, probWords=1;
         if(aux.size()>=5){
             string::iterator it=aux.begin();
             it++;
@@ -105,20 +105,17 @@ void test(map<string, pair<int, int> > &inventario, array<int, 2> &sum, double &
                         if(sz>=3){
                             int pos=lastIt-aux.begin();
                             string aux2=aux.substr(pos, sz);
-                            cout << aux2 <<"\n";
                             pair<set<string>::iterator, bool> inSet=thisSMS.insert(aux2);
                             if(inSet.second){
                                 map<string, pair<int, int> >::iterator itFind=inventario.find(aux2);
                                 if(itFind!=inventario.end()){
                                     double auxD=itFind->second.first;
-                                    cout << auxD << " "  << sum[0] << " spam\n";
-                                    auxD/=(double) sum[0];
+                                    auxD/=(double) numSpam;
                                     probSpamWords*=auxD;
                                     auxD=itFind->second.second+itFind->second.first;
-                                    cout << auxD << " " << sum[0]+sum[1] << " total\n";
-                                    double auxSum=sum[0]+sum[1];
-                                    auxD/=auxSum;
-                                    probWords*=auxD;
+                                    auxD=itFind->second.second;
+                                    auxD/=(double) numHam;
+                                    probHamWords*=auxD;
                                 }
                             }
                         }
@@ -132,34 +129,34 @@ void test(map<string, pair<int, int> > &inventario, array<int, 2> &sum, double &
                 if(sz>=3){
                     int pos=lastIt-aux.begin();
                     string aux2=aux.substr(pos, sz);
-                    cout << aux2 <<"\n";
                     pair<set<string>::iterator, bool> inSet=thisSMS.insert(aux2);
                     if(inSet.second){
                         map<string, pair<int, int> >::iterator itFind=inventario.find(aux2);
                         if(itFind!=inventario.end()){
                             double auxD=itFind->second.first;
-                            cout << auxD << " "  << cout << sum[0] << " spam\n";
-                            auxD/=(double) sum[0];
+                            auxD/=(double) numSpam;
                             probSpamWords*=auxD;
                             auxD=itFind->second.second+itFind->second.first;
-                            cout << auxD << " " << cout << sum[0]+sum[1] << " total\n";
-                            double auxSum=sum[0]+sum[1];
-                            auxD/=auxSum;
-                            probWords*=auxD;
+                            auxD=itFind->second.second;
+                            auxD/=(double) numHam;
+                            probHamWords*=auxD;
                         }
                     }
                 }
                 lastIt=aux.end();
             }
         }
-        cout << fixed << setprecision(40) << probSpamWords << " "  << probWords<< " "  << probSpam << "\n";
+        probWords=probSpamWords*probSpam;
+        double auxD=probHamWords*(1.0-probSpam);
+        probWords+=auxD;
         double ans=spamGivenWords(probSpamWords, probWords, probSpam);
-        cout << "La probabilidad de que este mensaje sea spam es :\t"<< fixed << setprecision(20) << ans <<"\n";
+        cout << "La probabilidad de que el mensaje " << cont << " sea spam, dado su contenido, es :\n\t"<< fixed << setprecision(20) << ans;
+        if(ans>0.5) cout << ". Es spam.\n";
+        else cout << ". No es spam\n";
         if(ans>0.5 && aux[0]=='s') numSpamFinal++;
         if(ans<=0.5 && aux[0]=='h') numHamFinal++;
     }
     in_file.close();
-    //cout << cont<<"\n";
 }
 
 int main(){
@@ -167,9 +164,6 @@ int main(){
     int numSpam=0, numHam=0, numTot;
     read(dicts, numSpam, numHam);
     numTot=numSpam+numHam;
-    cout <<numSpam << " " << numHam << "\n";
-    //cout << dicts[0].size()<<"\n";
-    //for(map<string, int>::iterator it=dicts[0].begin(); it!=dicts[0].end(); it++) cout << it->first<<" " << it->second << "\n";
     ofstream hist;
     hist.open("Histograma.dat", ofstream::trunc);
     hist << "Palabras Spam No_spam Total\n";
@@ -228,15 +222,12 @@ int main(){
     probSpam/=(double) numTot;
     int numSpamTest=0, numHamTest=0, numSpamFinal=0, numHamFinal=0;
 
-    test(inventario, sum, probSpam, numSpamTest, numHamTest, numSpamFinal, numHamFinal);
-    ///cout << fixed << setprecision(25) << probSpamWords <<" " << probHamWords << " " << probWords << "\n";
-    //double ans=spamGivenWords(probSpam, probHam, probWords);
-    //cout << "La probabilidad de que el correo de prueba sea spam dado su contenido es:\n\t"<< ans<<"\n";
+    test(inventario, numSpam, numHam, numTot, probSpam, numSpamTest, numHamTest, numSpamFinal, numHamFinal);
 
     double spamAc=(double)numSpamFinal/(double)numSpamTest;
-    double hamAc=(double)numSpamFinal/(double)numSpamTest;
-    cout << "La precision para spam es "<< spamAc<<"\n";
-    cout << "La precision para no spam es "<< hamAc<<"\n";
+    double hamAc=(double)numHamFinal/(double)numHamTest;
+    cout << "La precision para decir que un mensaje es spam es de "<< spamAc<<"\n";
+    cout << "La precision para decir que un mensaje no spam no es spam es de "<< hamAc<<"\n";
 
     return 0;
 }
