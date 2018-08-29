@@ -88,7 +88,6 @@ void test(map<string, pair<int, int> > &inventario, int &numSpam, int &numHam, i
         getline(in_file, aux);
         if(aux[0]=='h') numHamTest++;
         else numSpamTest++;
-        double probSpamWords=1, probHamWords=1, probWords=1;
         if(aux.size()>=5){
             string::iterator it=aux.begin();
             it++;
@@ -105,19 +104,7 @@ void test(map<string, pair<int, int> > &inventario, int &numSpam, int &numHam, i
                         if(sz>=3){
                             int pos=lastIt-aux.begin();
                             string aux2=aux.substr(pos, sz);
-                            pair<set<string>::iterator, bool> inSet=thisSMS.insert(aux2);
-                            if(inSet.second){
-                                map<string, pair<int, int> >::iterator itFind=inventario.find(aux2);
-                                if(itFind!=inventario.end()){
-                                    double auxD=itFind->second.first;
-                                    auxD/=(double) numSpam;
-                                    probSpamWords*=auxD;
-                                    auxD=itFind->second.second+itFind->second.first;
-                                    auxD=itFind->second.second;
-                                    auxD/=(double) numHam;
-                                    probHamWords*=auxD;
-                                }
-                            }
+                            thisSMS.insert(aux2);
                         }
                         lastIt=aux.end();
                     }
@@ -129,22 +116,49 @@ void test(map<string, pair<int, int> > &inventario, int &numSpam, int &numHam, i
                 if(sz>=3){
                     int pos=lastIt-aux.begin();
                     string aux2=aux.substr(pos, sz);
-                    pair<set<string>::iterator, bool> inSet=thisSMS.insert(aux2);
-                    if(inSet.second){
-                        map<string, pair<int, int> >::iterator itFind=inventario.find(aux2);
-                        if(itFind!=inventario.end()){
-                            double auxD=itFind->second.first;
-                            auxD/=(double) numSpam;
-                            probSpamWords*=auxD;
-                            auxD=itFind->second.second+itFind->second.first;
-                            auxD=itFind->second.second;
-                            auxD/=(double) numHam;
-                            probHamWords*=auxD;
-                        }
-                    }
+                    map<string, pair<int, int> >::iterator itFind=inventario.find(aux2);
+                    thisSMS.insert(aux2);
                 }
                 lastIt=aux.end();
             }
+        }
+        double probSpamWords=1, probHamWords=1, probWords=1;
+        map<string, pair<int, int> >::iterator itDict=inventario.begin();
+        set<string>::iterator itSet=thisSMS.begin();
+        while(itDict!=inventario.end() && itSet!=thisSMS.end()){
+            while(itDict!=inventario.end() && itSet!=thisSMS.end() && itDict->first<*itSet){
+                double auxD=itDict->second.first;
+                auxD/=(double)numSpam;
+                auxD=1-auxD;
+                probSpamWords*=auxD;
+                auxD=itDict->second.second;
+                auxD/=(double)numHam;
+                auxD=1-auxD;
+                probHamWords*=auxD;
+                itDict++;
+            }
+            while(itDict!=inventario.end() && itSet!=thisSMS.end() && itDict->first>*itSet)itSet++;
+            while(itDict!=inventario.end() && itSet!=thisSMS.end() && itDict->first==*itSet){
+                double auxD=itDict->second.first;
+                auxD/=(double)numSpam;
+                probSpamWords*=auxD;
+                auxD=itDict->second.second;
+                auxD/=(double)numHam;
+                probHamWords*=auxD;
+                itSet++;
+                itDict++;
+            }
+        }
+        while(itDict!=inventario.end()){
+            double auxD=itDict->second.first;
+            auxD/=(double)numSpam;
+            auxD=1-auxD;
+            probSpamWords*=auxD;
+            auxD=itDict->second.second;
+            auxD/=(double)numHam;
+            auxD=1-auxD;
+            probHamWords*=auxD;
+            itDict++;
         }
         probWords=probSpamWords*probSpam;
         double auxD=probHamWords*(1.0-probSpam);
