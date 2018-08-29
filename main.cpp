@@ -240,8 +240,8 @@ int main(){
 
     double spamAc=(double)numSpamFinal/(double)numSpamTest;
     double hamAc=(double)numHamFinal/(double)numHamTest;
-    cout << "La precision para decir que un mensaje es spam es de "<< spamAc<<"\n";
-    cout << "La precision para decir que un mensaje no spam no es spam es de "<< hamAc<<"\n";
+    cout << "La precision para decir que un mensaje que es spam es spam es de "<< spamAc<<"\n";
+    cout << "La precision para decir que un mensaje que no spam no es spam es de "<< hamAc<<"\n";
 
     return 0;
 }
